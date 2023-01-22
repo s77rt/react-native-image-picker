@@ -258,12 +258,14 @@ public class Utils {
     static String getFileName(Uri uri, Context context) {
         String result = null;
         Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
-        try {
-          if (cursor != null && cursor.moveToFirst()) {
-            result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
-          }
-        } finally {
-          cursor.close();
+        if (cursor != null) {
+            try {
+              if (cursor.moveToFirst()) {
+                result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+              }
+            } finally {
+              cursor.close();
+            }
         }
         if (result == null) {
             result = uri.getLastPathSegment();
