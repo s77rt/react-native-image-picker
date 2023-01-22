@@ -17,6 +17,8 @@ import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.webkit.MimeTypeMap;
+import android.database.Cursor;
+import android.provider.OpenableColumns;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
@@ -253,6 +255,22 @@ public class Utils {
         return new int[]{width, height};
     }
 
+    static String getFileName(Uri uri, Context context) {
+        String result = null;
+        Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+        try {
+          if (cursor != null && cursor.moveToFirst()) {
+            result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+          }
+        } finally {
+          cursor.close();
+        }
+        if (result == null) {
+            result = uri.getLastPathSegment();
+        }
+        return result;
+    }
+
     static double getFileSize(Uri uri, Context context) {
         try {
             ParcelFileDescriptor f = context.getContentResolver().openFileDescriptor(uri, "r");
@@ -392,7 +410,7 @@ public class Utils {
     }
 
     static ReadableMap getImageResponseMap(Uri uri, Options options, Context context) {
-        String fileName = uri.getLastPathSegment();
+        String fileName = getFileName(uri, context);
         ImageMetadata imageMetadata = new ImageMetadata(uri, context);
         int[] dimensions = getImageDimensions(uri, context);
 
@@ -419,7 +437,7 @@ public class Utils {
     }
 
     static ReadableMap getVideoResponseMap(Uri uri, Options options, Context context) {
-        String fileName = uri.getLastPathSegment();
+        String fileName = getFileName(uri, context);
         WritableMap map = Arguments.createMap();
         VideoMetadata videoMetadata = new VideoMetadata(uri, context);
 
